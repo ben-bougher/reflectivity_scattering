@@ -1,0 +1,19 @@
+data:
+  N: 256
+  derivative: False
+  labels:
+  - Ordovician
+  - BlackRiver
+  - Utica
+  - Kope
+  - TL
+features:
+  scattering_transfer:
+    N: 256
+    T: 1024
+machine_learning:
+  classification:
+    knn:
+      k: 5
+  preprocess:
+    training_split: 0.75

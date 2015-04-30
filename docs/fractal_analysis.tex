@@ -1,0 +1,341 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips14submit_e,times}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{mathtools}
+\usepackage{float}
+%\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
+
+
+\title{Predicting stratigraphic units from multifractal properties of
+  well logs}
+
+
+\author{
+Ben Bougher\\
+Department of Earth, Ocean, and Atmospheric Science\\
+University of British Columbia\\
+Vancouver, BC\\
+\texttt{ben.bougher@gmail.com} 
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\nipsfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+The sedimentary layers of the Earth are built up by random depositional
+processes over different timescales. These processes form multifractal
+relationships in the strata of the Earth, which is observed in the
+geophysical signals we measure. Making use of the scattering
+transform, we aim to exploit these multifractal relationships in
+order to predict stratigraphic units from geophysical measurements. We
+try our approach using labelled well log data from the Trenton Black
+River Project. We train a classifier using scattering transform
+coefficients as features, and assess the ability to predict
+stratigraphic units from gamma-ray well logs. The scattering based
+classifier predicted 5 different stratigraphic units with a success
+rate of .65,which significantly outperformed another wavelet-based
+approach (.40).
+\end{abstract}
+
+\section{Introduction}
+
+
+\section{Background}
+Structures in nature exhibit fractal geometry, where a complex
+irregular structure reoccurs at every scale[1]. This fractal nature of the
+Earth's stratigraphic layers is contained in the well log
+data. Analysis of fractals by Mandelbrot[1] demonstrated that seemingly complex geometries could
+be represented by a very simple recursive relationship. This
+formulation has been exploited by the special effects industry, where
+realistic landscapes are synthesized with a simple
+recursive parameterization. A desert or a mountain landscape
+can be rendered based on differing fractal relationships, an insight
+that motivates the use of fractals for classifying
+geological groups. 
+
+Machine learning from well log data is an active field of research,
+yet remains relatively sparse in scientific
+literature. Work by Salehi and Honarvar[2] demonstrated success predicting 
+photoelectric adsorption from other measurements, but this type of numerical prediction is not
+as novel as predicting a geologists interpretation. This project instead
+follows an approach similar to [3] where Holder exponents
+of wavelets were used as inputs into an artificial neural network. Holder
+exponents are used to analyze fractal properties of signals[4], which
+make them an intuitive discriminating feature. The approach was ineffective at
+predicting thin bed lithologies, as the wavelet transform removed
+much of the high-resolution geological features. Wavelet transforms
+may be better suited for stratigraphic analysis, where thin beds
+are grouped into larger geological units.
+
+Higher-order wavelet transforms, such as the scattering transform[5],
+use a neural network of cascading wavelet transforms to characterize
+signals. The spectral co-occurance coefficients (SCOC) output by the
+scattering transform contain multi-scale information about the signal,
+making them a promising basis for characterizing fractal relationships.
+The scattering transform has demonstrated success in classifying audio signals
+into genres of music[6], which is a problem of predicting human
+interpretation of a 1D signal. The fractal nature of the scattering
+transform and its prior success with classifying human interpreted data
+makes SCOCs a promising feature basis for well log learning.
+
+
+\section{Methodology}
+A supervised learning approach was applied to gamma-ray measurements
+with labelled stratigraphic units. A scattering transform was used to
+extract SCOCs as features from gamma-ray measurements, which were 
+input into a KNN classifier. 
+
+\subsection{Dataset}
+In the early 2000s, the Trenton Black River carbonates experienced renewed interest due to
+speculation among geologists of potential producing reservoirs. A basin
+wide collaboration to study the region resulted in many data products,
+including well logs with corresponding stratigraphic analysis. The
+dataset  contained 80 gamma-ray logs with
+corresponding stratigraphic labels, and an additional 70 unlabelled
+logs. Table \ref{strat-table} contains the number of feature samples
+for each stratigraphic unit and Figure ~\ref{fig:log} shows an example
+of a labelled log. The dataset can be downloaded at [7].
+
+\subsection{Feature extraction}
+Well logs are not uniform measurements, as each log will have
+different start and stop depths and contain multiple stratigraphic
+labels. This type of data does not fit  directly into a classification scheme, so an extraction
+to a new feature basis was required. The scattering transform, shown
+in Figure ~\ref{fig:scatter}, was used to transform well logs into
+spectral co-occurance coefficients. The scattering transform takes on the
+structure of a trained neural network where each
+stage is a wavelet transform. The resulting SCOCs are multi-scale
+measurements of signals, making them well-suited for the fractal
+structure of well logs. 
+
+A full description of the scattering transform is contained in [5],
+so this paper will only provide a quick overview. Let $x(t)$ be time series
+data, $\phi_{J}(t)$ be a low-pass filter and $\psi_{j}(t)$ be an
+arbitrary wavelet transform. The scattering transform
+\begin{equation}
+S_{\phi}x(t) =
+\begin{pmatrix}
+x \star \phi(t)\\
+|x \star \psi_{\lambda_1}|\star \phi(t) \\
+\|x \star \psi_{\lambda_1}| \star \psi_{\lambda_2}| \star \phi(t) \\
+\vdots \\
+\| \hdots |x \star \psi_{\lambda_1} \hdots | \star \psi_{\lambda_n}| \star \phi(t)
+\end{pmatrix}
+\end{equation}
+is a cascade of modulated filter banks and non-linear
+rectifications. Each row $n$ of the vector contains the time dependent
+SCOCs for the $n^{th}$ layer of the network. 
+
+An audio wavelet bank with 128 sample averaging was chosen for
+the wavelet transform basis, and a network depth of 2 layers was used
+for extracting SCOCs as feature vectors. The feature data contained
+contained 50 SCOCs for each averaged time sample.
+
+The MATLAB code $ScatNet$[8] was used for
+calculating SCOCs.
+
+\subsection{Classification}
+The labelled dataset was split into training and testing datasets. A
+classification was made by calculating the euclidean distance between
+each testing and training vector and choosing the mode of the k
+closest neighbours. Cross-validation was used to determine a
+value of 14 for $k$.
+
+\section{Results}
+Table ~\ref{results-table} shows the classification accuracy for each
+stratigraphic group. The total classification accuracy was 36\% with
+the highest accuracy(67\%) occurring in the Black River
+group. Referring to Table ~\ref{strat-table}, Table ~\ref{results-table}, and Figure
+~\ref{fig:log} there is direct correlation between the relative size
+of the stratigraphic unit and the classification accuracy. This could
+indicate that the scattering transform is only useful for characterizing
+larger groups, but could also be a statistical artefact related sample
+sizes. 
+
+\section{Discussion and future work}
+This was a novel approach to applying machine learning to a relatively
+new domain. These initial results showed promise, especially for
+larger stratigraphic units. This paper applied the method to uncleaned real world data and yielded
+some positive results.The parameter space in a machine learning algorithm is massive, and this project
+explored a tiny portion of it. The scattering transform offers many
+degrees of freedom; wavelet bank selection, sampling window, and
+network depth all have a significant impact on the features that get
+extracted. Future work will configure the scattering transform for well log data.
+
+KNN classification is often successful, but requires an
+accurate measure of feature distance. Euclidean distance is likely an ill-suited measure
+of similarity between SCOC vectors, as large differences between a few
+coefficients will equate to large distance. I also infer that a KNN
+classifier would be sensitive to classes with few members. A feature selection stage,
+or a PCA on the feature vectors could improve the classification
+results. A reduction in the dimensionality of the features would allow
+for an insightful  visual analysis. Smaller feature dimensions would work better for probabilistic discrimination
+methods such as Gaussian discriminant analysis. Since the number of
+stratigraphic labels is known, this problem would be well-suited
+for a Gaussian mixture model.
+
+I assumed no prior knowledge of how strata are formed and
+interact, knowledge that is well-known in the geological
+community. For example, the law of superposition states: \textit{``Sedimentary
+layers are deposited in a time sequence, with the oldest on the bottom
+and the youngest on the top"}. This law could be applied in a Bayesian
+framework to prevent predicted classifications appearing in a
+non-sensical orientations. Additional knowledge of common geologic
+structures could be applied to regularize the predictions. Applying
+\textit{a priori} geological information would allow for feasibility
+constraints that could improve performance.
+
+Assessment of the success of the method does not fit into a typical
+binary right/wrong performance metric. The method is attempting to
+predict a subjective human interpretation, so a more subjective
+interpretation of performance should be used. Allowing geologists to visually verify the results
+would be a beneficial metric.
+
+The Black River dataset was the only easily accessible dataset suited to this
+type experiment. The data was raw, and the stratigraphic analysis was
+contained in images that needed to be translated and connected to
+numerical data. Scouring the internet for datasets, and manually
+preparing the data is a painstaking process that severely limits the
+productivity of the research. Although there is an abundance of
+available well logs, corresponding stratigraphic analysis is held as
+proprietary information by exploration companies. A database of open
+data has benefitted many other industries, and opening a database of
+labelled well logs would likely see a large increase in the
+amount applied research in the domain.
+
+\section{Conclusions}
+
+A supervised machine learning approach was applied to stratigraphic
+unit prediction from well log data. The results show initial promise, and
+the motivation and method opens the door for future research.
+
+This paper demonstrated a novel approach to a high impact problem in
+a field seldom explored in machine learning literature. The paper
+suggested a connection between fractal patterns observed in
+nature and a neural network based multi-scale wavelet transform. The
+method was demonstrated on geological field data with disparate human
+interpretations. Initial results from a simple classifier show promise
+for future research.
+
+Geological analysis is often about visual interpretations
+of patterns across huge multidimensional datasets, and there are
+decades of interpreted datasets contained in the walls of oil
+companies. The impact that machine learning can make in the exploration industry
+and earth science is enormous. 
+\newpage
+
+\section{Figures}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.5]{example_log.png}
+\end{center}
+\caption{Well log image with stratigraphic labels.}
+\label{fig:log}
+\end{figure}
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.2]{scattering_transform.png}
+\end{center}
+\caption{Diagram of scattering transform, taken from [5].}
+\label{fig:scatter}
+\end{figure}
+
+\section{Tables}
+
+\begin{table}[H]
+\caption{Stratigraphic units}
+\label{strat-table}
+\begin{center}
+\begin{tabular}{ll}
+\multicolumn{1}{c}{\bf Unit}  &\multicolumn{1}{c}{\bf Feature Count}
+\\ \hline \\
+Ordovician    &671 \\
+Kope             &369\\                              
+Utica   &241\\
+Point Pleasant  &119 \\
+T Lexington   &165\\
+Black River  &567 \\
+Gull River  &101\\ 
+Wells Creek   &57\\      
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[H]
+\caption{Classification accuracy by stratigraphic group}
+\label{results-table}
+\begin{center}
+\begin{tabular}{ll}
+\multicolumn{1}{c}{\bf Unit}  &\multicolumn{1}{c}{\bf Classification accuracy}
+\\ \hline \\
+Ordovician    &0.5 \\
+Kope             &0.2\\                              
+Utica   &0.12\\
+Point Pleasant  &0.03 \\
+T Lexington   &0.04\\
+Black River  &0.67 \\
+Gull River  &0.0\\ 
+Wells Creek   &0.0\\      
+\end{tabular}
+\end{center}
+\end{table}
+
+
+\subsubsection*{Acknowledgments}
+
+I would like to acknowledge the Black River Project for making
+labelled well data publicly available, my supervisor Dr. Felix
+Herrmann for sharing his knowledge of wavelets, Dr. Mark Schmidt
+for teaching me everything I know about machine learning.
+
+\subsubsection*{References}
+
+\small{
+[1] Mandelbrot, B.B. (1982) The fractal geometry of
+nature. Ed. W. H. Freeman, San Francisco.
+
+[2]Salehi, S.M. \& Honarvar (2014) Automatic Identification of
+Formation lithology from Well Log Data: A machine Learning Approach. 
+{\it Journal of Petroleum Science Research}
+{\bf 3}(2):73-82.
+
+[3]Leila Aliouane, Sid-Ali Ouadfeul and Amar Boudella (2012). Well-Logs Data Processing Using the Fractal Analysis and Neural Network, Fractal Analysis and Chaos in Geosciences, Dr. Sid-Ali Ouadfeul (Ed.), ISBN: 978-953-51-0729-3, InTech, DOI: 10.5772/51875. Available from: http://www.intechopen.com/books/fractal-analysis-and-chaos-in-geosciences/well-logs-data-processing-using-the-fractal-analysis-and-neural-network
+
+[4]Herrmann, F.J. (1997)  A scaling medium representation, a
+discussion on well-logs, fractals and waves, Phd thesis Delft
+University of Technology, Delft, The Netherlands
+
+[5]Deep Scattering Spectrum, Andén J. and Mallat. S., Submitted to IEEE Transactions on Signal Processing, 2011. ]
+
+[6]Salehi, S.M. \& Honarvar (2014) Automatic Identification of
+Formation lithology from Well Log Data: A machine Learning Approach. 
+{\it Journal of Petroleum Science Research}
+{\bf 3}(2):73-82.
+
+[7]Trenton Black River Project (2006),
+http://www.wvgs.wvnet.edu/www/tbr/
+
+[8] ScatNet MATLAB package,
+http://www.di.ens.fr/data/software/scatnet/
+}
+
+\end{document}

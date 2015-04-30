@@ -1,0 +1,372 @@
+\documentclass[journal]{IEEEtran}
+
+% *** MISC UTILITY PACKAGES ***
+%
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/oberdiek/
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+ \usepackage{graphicx}
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+%
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+% Do not put math or special symbols in the title.
+\title{Predicting stratigraphic units from fractal properties of
+  bore hole logs}
+
+
+
+\author{
+Ben Bougher\\
+Department of Earth, Ocean, and Atmospheric Science\\
+University of British Columbia\\
+Vancouver, BC\\
+\texttt{ben.bougher@gmail.com} 
+}
+
+
+
+% make the title area
+\maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+\begin{abstract}
+The sedimentary layers of the Earth are built up by random depositional
+processes over different timescales. These processes form fractal
+relationships in the strata of the Earth, which is observed in the
+geophysical signals we measure. Making use of the scattering
+transform, we aim to exploit these fractal relationships  in
+order to predict stratigraphic units from geophysical measurements. We
+try our approach using labelled well log data from the Trenton Black
+River Project. We train a classifier using scattering transform
+coefficients as features, and assess the ability to predict
+stratigraphic units from gamma-ray well logs. The scattering based
+classifier predicted 5 different stratigraphic units with a success
+rate of .65, which significantly outperformed another wavelet-based
+approach (.40).
+\end{abstract}
+
+% Note that keywords are not normally used for peerreview papers.
+\begin{IEEEkeywords}
+Scattering transform, machine learning, well logs
+\end{IEEEkeywords}
+
+
+
+
+
+
+% For peer review papers, you can put extra information on the cover
+% page as needed:
+% \ifCLASSOPTIONpeerreview
+% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
+% \fi
+%
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+
+
+\section{Introduction}
+% The very first letter is a 2 line initial drop letter followed
+% by the rest of the first word in caps.
+% 
+% form to use if the first word consists of a single letter:
+% \IEEEPARstart{A}{demo} file is ....
+% 
+% form to use if you need the single drop letter followed by
+% normal text (unknown if ever used by IEEE):
+% \IEEEPARstart{A}{}demo file is ....
+% 
+% Some journals put the first two words in caps:
+% \IEEEPARstart{T}{his demo} file is ....
+% 
+% Here we have the typical use of a "T" for an initial drop letter
+% and "HIS" in caps to complete the first word.
+\IEEEPARstart{F}{ractals} are natural phenomena or mathematical sets
+that exhibit a repeating pattern (self-similiarity) that displays at every scale
+\cite{fractal_wiki}\cite{Mandelbrot}. Fractals are commonly found in nature, such as the
+repeating branching patterns of trees, the complex texture of Romaneski broccoli, 
+or the rugged terrain of a mountain. Fractal geometries can
+can be extended to signal analysis, where self-similarity is defined by
+the signal statistics at every scale. This powerful relationship
+allows us to find information in signals that would otherwise seem 
+unstructured and random.
+
+
+
+Geological sediments are built up by random depositional systems
+occurring across many timescales (Figure \ref{fig:dep_proc}), resulting in statistically fractal layers
+in the Earth's strata. Since direct observation of the Earth's subsurface is not possible,
+geoscientists rely on signals from remote sensing methods. Scientists interpret 
+data from bore hole logs, seismic surveys, and other remote sensing measurements to
+create a stratigraphic map of the subsurface. This interpretation process is highly
+subjective and is often based on recognizing abstract 
+patterns and correlations in data. 
+
+
+This project explores fractal statistics as a distinguishing feature of a 
+stratigraphic unit in geophysical data. The working hypothesis is that different
+depositional systems create distinct fractal statistics, which can be analyzed in order
+to better classify and interpret subsurface data. In addition to using conventional fractal analysis
+techniques, this paper introduces the scattering transform \cite{mallat} as a method for analyzing
+fractal statistics in geophysical signals.
+
+\section{Methodology}
+The hypothesis is tested by predicting stratigraphic units from gamma-ray measurements in 
+bore hole logs. Two methods of fractal feature extraction (Holder exponents and scattering transform) were tested, and a simple 
+nearest-neighbour classifier was used for prediction. Labelled data from the Trenton-Black River 
+Project were used as ground truth data.
+
+\subsection{Dataset}
+In the early 2000s, the Trenton Black River carbonates experienced renewed interest due to 
+speculation among geologists of potential producing reservoirs \cite{Trenton}. A basin wide collaboration to 
+study the region resulted in many data products, including well logs with corresponding 
+stratigraphic analysis. The dataset contained 80 gamma-ray logs with corresponding 
+stratigraphic labels. Although the region contained more units, some were too thin and pinched out to allow
+for valid signal analysis (Figure \ref{fig:well_log}). The 5 most prominent units (Black River, Kope, Ordovician, Trenton/Lexington,
+and Utica) were used for analysis.
+
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/fractal_examples.png}
+\caption{Examples of fractal geometries: Romaneski broccoli \cite{wired}, Mandelbrot set \cite{wiki}, snowflake \cite{wired}}
+\label{fig:fractal_ex}
+\end{figure}
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/dep_proc.png}
+\caption{Depositional processes occurring across different timescales. River delta \cite{wiki}, glacier \cite{glacier}, transgression/regression \cite{transgression}}
+\label{fig:dep_proc}
+\end{figure}
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=2in]{../presentation/example_log.png}
+\caption{Example of a well log with labelled stratigraphic units.}
+\label{fig:well_log}
+\end{figure}
+
+\subsection{Holder coefficients}
+Fractal signal analysis requires statistical measurements at different scales. The wavelet transform can
+be used to decompose a signal into scales, where measuring the variance at each scale yields the
+Holder coefficients (Figure \ref{fig:Holder}). Fractal signals can be further characterized using the Hurst parameter, 
+which is defined as the slope of the line of a log plot of the Holder coefficients \cite{Aliouane}. Previous research
+efforts have looked at well log analysis using Holder coefficients to varying degrees of success \cite{Aliouane} \cite{herrmann} \cite{Salehi}.
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/holder_analysis.eps}
+\caption{Holder analysis of a fractal signal. A signal(green) is decomposed into scales ($\lambda$) and 
+Holder coefficients (bottom) are formed from the variance ($\sigma)$ at each scale. The Hurst parameter (red) is
+the slope of the log of the Holder coefficients. }
+\label{fig:Holder}
+\end{figure}
+
+
+\subsection{Scattering transform}
+Holder coefficients are limited to first order statistics at each scale, which is missing higher-order information
+and inter-scale relationships. For a deeper multi-scale analysis, we use a non-linear cascading wavelet
+transform called the scattering transform \cite{mallat}. The scattering transform takes the form of trained convolutional 
+neural network (Figure \ref{fig:scatter}), where each layer is formed by taking the magnitude of a wavelet transform. The outputs
+at each layer is the average of the magnitude of the wavelet coefficients at each scale. The algorithm applied on
+a signal is shown in Figure \ref{fig:scatter_sig}. A open source MATLAB implementation \cite{Scatnet} was for calculating scattering coefficients
+on the dataset.
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/scattering.png}
+\caption{The scattering transform as a trained neural network. Wavelet decompositions become the
+neurons with the absolute value serving as the threshold function. Outputs at each level are the low-passed outputs from
+each neuron. Figure from \cite{mallat}.}
+\label{fig:scatter}
+\end{figure}
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/scatter_analysis.eps}
+\caption{Example of a single window of the scattering transform acting on a signal $x(t)$. $S0, S1$, and $S2$ are the transform outputs
+at each level.}
+\label{fig:scatter_sig}
+\end{figure}
+
+\subsection{Classifier}
+Using fractal analysis to extract feature vectors, a classification experiment was formulated by splitting 
+the data into testing and training subsets. A nearest neighbour classifier (Figure \ref{fig:knn}) was used to predict stratigraphic
+labels in the test data set. Label predictions were compared to truth labels to assess the success of the methodology.
+ 
+
+
+
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/knn.eps}
+\caption{A nearest neighbour classifier. The input vector is compared to each feature  vector in the training dataset, and the mode of labels of the closest vectors is used as the predicted class.}
+\label{fig:knn}
+\end{figure}
+
+
+\section{Results}
+Using scattering coefficients as features resulted in .65 success rate compared to .41 for the Holder coefficients.
+Correct and false classifications are summarized in Figure \ref{fig:scatter_results} and Figure \ref{fig:holder_results}.
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/exp119.eps}
+\caption{Classification results using scattering coefficients as feature vectors. The size each square corresponds to number of samples, and the colour is determined by the number of predictions.
+Correct detections are along the diagonals and misclassifications are the off-diagonals.}
+\label{fig:scatter_results}
+\end{figure}
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/exp139.eps}
+\caption{Classification results using Holder coefficients as feature vectors. The size each square corresponds to number of samples, and the colour is determined by the number of predictions.
+Correct detections are along the diagonals and misclassifications are the off-diagonals.}
+\label{fig:holder_results}
+\end{figure}
+
+\section{Discussion}
+Analysis of the methodology applied to this limited dataset allows for some rudimentary conclusions. A prediction rate of .65 for 5 labels indicates a somewhat
+significant correlation between stratigraphic labels and fractal statistics, as a prediction rate of .2 would correspond to no correlation. Furthermore, comparing
+prediction rates between Holder coefficients and scattering coefficients we can induce that the scattering transform coefficients contain additional information
+about the geology represented by the signal. 
+
+Assessing the results in a quantitative matter is highly uncertain, as the labels in the "truth" data set are inherently subjective. What a geologist
+interprets as a stratigraphic unit can be somewhat arbitrary, and may be based on subjective information other than lithology and rock properties. Comparing 
+Figure \ref{fig:scatter_results} and Figure \ref{fig:holder_results} reveals that the most common misclassifications are from neighbouring stratigraphic units (Trenton Lexington and Black River).
+These units may actually come from the same depositional system and could therefore have similar fractal structure. More detailed assessment of the geology and 
+the method used to interpret stratigraphy is required in order to better understand these results.
+
+The scattering transform is highly parameterized and results would be sensitive to choices of wavelet banks and window sizes at each level of the transform. This basic study
+used dyadic wavelets and through experimentation found 256 samples as the best choice of window size. Using wavelets with different vanishing moments for each scale 
+may be worth exploring, as well as extending the structure of the scattering transform to related transforms such as curvelets and shearlets.
+
+\section{Epilogue}
+This study showed a correlation between interpreted stratigraphic units and a fractal analysis of well log signals. On this particular dataset,
+the scattering transform outperformed a conventional fractal analysis method indicating that it may carry more information about the underlying geology.
+
+The general method of fractal analysis of geophysical signals can be extended beyond gamma-ray logs to include other bore hole measurements and seismic data.
+Exploration surveys include many well logs and seismic sections, which often measure the same Earth at different scales. In principle, since fractal methods measure multi-scale relationships,
+we should be able to use fractal analysis to classify and correlate regions of data across different measurement types. Relating fractal statistics to depositional environments
+and stratigraphic units simultaneously in well logs and seismic depth slices could have a significant impact in interpretation and geological inversion.
+ 
+The scattering transform is invariant to translations and stable to deformation, properties that make it particularly interesting for use
+as a seismic attribute. Under the born scattering approximation, seismic migration becomes a linear operator consisting of shifts 
+and scalings that map seismic data to an image. The scattering transform should therefore be invariant under seismic migration,
+meaning that scattering analysis of shot record data will be equivalent to analysis of the migrated image. Under the broadest of assumptions,
+scattering coefficients are related to the fractal statistics of the sedimentary geology, which may be determined by their underlying depositional process.
+Combining these assumptions with the invariance properties of the transform defines a new seismic attribute that can extract valuable geological information
+directly from seismic shot records. 
+
+Moving forward, it is necessary to put the ideas presented in this paper into a rigorous scientific method. A proper testing dataset with verified geological
+interpretations is a necessity for progressing this research. Given a dataset with multiple labelled well logs and interpreted seismic images, we can begin
+testing hypothesis' and work towards a workflow based on fractal analysis. The methodology presented in this paper would first be extended
+to use multiple logs (more than GR) from bore hole measurements to see if 1D stratigraphic classification could be improved. Assuming we are able to again correlate
+scattering coefficients to stratigraphic units we could extend the method to the analysis of seismic depth slices. We would need to correlate
+2D scattering transform coefficients to labelled strata, and ideally connect the 2D scattering coefficients to 1D scattering coefficients of co-located well log data.
+Tying well log data to seismic in a quantitative framework would be a significant breakthrough in geophysical interpretation and would validate 
+that scattering coefficients carry relevant geological information. Once this is shown, we can define the scattering transform as useful seismic attribute that
+can reveal geological information from seismic images. Finally we would examine the invariance properties of the scattering transform and assess the possibility
+of calculating the seismic attribute from pre-stack shot gathers.
+
+ \begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../presentation/seismic_example.png}
+\caption{Seismic depth slices and co-located log measurements should contain similar scattering coefficients. Figure generated from \cite{usgs} and \cite{Chopra}.}
+\label{fig:seismic_example}
+\end{figure}
+
+\begin{thebibliography}{1}
+
+\bibitem{fractal_wiki}
+http://en.wikipedia.org/wiki/Fractal
+
+\bibitem{Mandelbrot}
+Mandelbrot, B.B. (1982) The fractal geometry of nature. Ed. W. H. Freeman, San Francisco.
+
+\bibitem{mallat}
+Deep Scattering Spectrum, Andn J. and Mallat. S., Submitted to IEEE Transactions on Signal Processing, 2011. 
+
+\bibitem{wired}
+Image courtesy of http://www.wired.com/2010/09/fractal-patterns-in-nature/
+
+\bibitem{wiki}
+http://en.wikipedia.org
+
+\bibitem{Trenton} 
+Trenton Black River Project (2006), http://www.wvgs.wvnet.edu/www/tbr/
+
+
+\bibitem{Aliouane} 
+Leila Aliouane, Sid-Ali Ouadfeul and Amar Boudella (2012). Well-Logs Data Processing Using the Fractal Analysis and Neural Network, Fractal Analysis and Chaos in Geosciences, Dr. Sid-Ali Ouadfeul (Ed.), ISBN: 978-953-51-0729-3, InTech, DOI: 10.5772/51875. Available from: http://www.intechopen.com/books/fractal- analysis-and-chaos-in-geosciences/well-logs-data-processing-using-the-fractal-analysis-and-neural-network
+  
+\bibitem{Salehi}
+Salehi, S.M. and Honarvar (2014) Automatic Identification of Formation lithology from Well Log Data: A machine Learning Approach. Journal of Petroleum Science Research 3(2):73-82.
+
+\bibitem{herrmann}
+Herrmann, F.J. (1997) A scaling medium representation, a discussion on well-logs, fractals and waves, Phd thesis Delft University of Technology, Delft, The Netherlands
+
+\bibitem{glacier}
+Image courtesy of http://electrictreehouse.com
+
+\bibitem{transgression}
+Image courtesy http://uregina.ca/~sauchyn
+
+\bibitem{Scatnet} 
+ScatNet MATLAB package, http://www.di.ens.fr/data/software/scatnet/
+
+
+\bibitem{usgs}
+Image courtesy of http://energy.cr.usgs.gov
+
+\bibitem{Chopra}
+Chopra, S. and K. J.  Marfurt (2011) Interesting pursuits in seismic curvature attribute analysis, CSEG RECORDER
+\end{thebibliography}
+
+
+
+% that's all folks
+\end{document}
+
+

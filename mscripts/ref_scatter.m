@@ -2,50 +2,64 @@ load '../data/reflectivity.mat'
 addPaths;
 
 
-time = seis_time';
-depth = seis_depth';
+seis = seis_time';
+ref = ref_time';
 
 % Length of data to use
-N = size(time,1);
+N = size(seis_time,2);
 
 % Scattering window size
-T = 128;
+T = 1024;
 
 % depth of scattering network
 M = 2;
 
-time_s = scatter(time,N,T,M);
-depth_s = scatter(depth,N,T,M);
+scat_seis = scatter(seis,N,T,M);
+scat_ref = scatter(ref,N,T,M);
 
 
-for i=1:M+1
     
-    figure
-    time_coeffs = [time_s{i}.signal{:}]';
-    depth_coeffs = [depth_s{i}.signal{:}]';
-    
-    subplot(221);
-    plot(time);
-        
-    subplot(222);
 
-    plot(depth);
+t = [0:nsamps-1] * dt;
+figure
 
-    if i > 1
-        subplot(223);
-        imagesc(time_coeffs);
+plot(t, ref);%title('reflectivity series', 'FontSize', 20);
+xlabel('time [s]','FontSize', 16);
+ylabel('amplitude');xlim([0, max(t)])
+ylim([-8,8]);
+
+figure
+
+plot(t,seis);%title('synthetic seismic', 'FontSize', 20)
+;xlabel('time [s]','FontSize', 16);
+ylabel('amplitude');xlim([0, max(t)]);ylim([-.5,.5]);
+
+l1 = strtrim(cellstr(num2str(scat_seis{M+1}.meta.j(1,:)')))
+l2 = strtrim(cellstr(num2str(scat_seis{M+1}.meta.j(2,:)')))
+l = l1 %strcat(l1,'|',l2);
+
+t = linspace(0, max(t), size([scat_ref{M+1}.signal{:}]',2));
+c = [0:size([scat_ref{M+1}.signal{:}],2)-1]
+
+figure
+imagesc(t,c, [scat_ref{M+1}.signal{:}]');xlabel('time [s]', 'FontSize', 16);
+%title('reflectivity scattering', 'FontSize', 20);
+set(gca, 'YTick', []);xlim([0, max(t)])
+
+figure
+imagesc(t,c,[scat_seis{M+1}.signal{:}]');xlabel('time [s]', 'FontSize', 16);
+%title('seismic scattering', 'FontSize', 20);
+set(gca, 'YTick', []);xlim([0, max(t)])
+
+
+
     
-        subplot(224);
-        imagesc(depth_coeffs);
-    else
-        subplot(223);
-        plot(time_coeffs);
+
+
     
-        subplot(224);
-        plot(depth_coeffs);
-    end
     
-end
+    
+
 
     
     

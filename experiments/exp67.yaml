@@ -1,0 +1,21 @@
+data:
+  N: 64
+  labels:
+  - Ordovician
+  - BlackRiver
+  - Utica
+  - Kope
+  - TL
+features:
+  scatter:
+    M:
+    - 0
+    - 1
+    N: 64
+    T: 256
+machine_learning:
+  classification:
+    knn:
+      k: 5
+  preprocess:
+    training_split: 0.75
